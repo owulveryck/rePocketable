@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kr/pretty"
+	"github.com/owulveryck/rePocketable/internal/epub"
 	"github.com/owulveryck/rePocketable/internal/http"
 	"github.com/owulveryck/rePocketable/internal/pocket"
 )
@@ -63,8 +63,18 @@ func main() {
 		}
 	}()
 	for item := range pocket.ItemsC {
-		if item.IsArticle == 0 {
-			pretty.Print(item)
+		if item.IsArticle != 0 {
+			doc := epub.NewDocument(item)
+			err := doc.Fill()
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			err = doc.Write(filepath.Join("testdata", item.ResolvedTitle+".epub"))
+			if err != nil {
+				log.Println(err)
+				continue
+			}
 		}
 	}
 }
