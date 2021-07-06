@@ -1,11 +1,14 @@
 WIP
 
-| KEY                         | TYPE        | DEFAULT    | REQUIRED    | DESCRIPTION    |
-|-----------------------------|-------------|------------|-------------|----------------|
-| POCKET_LIVENESS_CHECK       | Duration    | 5m         | true        |                |
-| POCKET_PROBE_TIMEOUT        | Duration    | 60m        | true        |                |
-| POCKET_HTTP_TIMEOUT         | Duration    | 10s        | true        |                |
-| POCKET_TRANSPORT_TIMEOUT    | Duration    | 5s         | true        |                |
+| KEY                             | TYPE        | DEFAULT    | REQUIRED    | DESCRIPTION    |
+|---------------------------------|-------------|------------|-------------|----------------|
+| DOWNLOADER_LIVENESS_CHECK       | Duration    | 5m         | true        |                |
+| DOWNLOADER_PROBE_TIMEOUT        | Duration    | 60m        | true        |                |
+| DOWNLOADER_HTTP_TIMEOUT         | Duration    | 10s        | true        |                |
+| DOWNLOADER_TRANSPORT_TIMEOUT    | Duration    | 5s         | true        |                |
+
+| KEY                        | TYPE        | DEFAULT                         | REQUIRED    | DESCRIPTION                                                        |
+|----------------------------|-------------|---------------------------------|-------------|--------------------------------------------------------------------|
 | POCKET_UPDATE_FREQUENCY    | Duration    | 1h                              | true        | How often to query getPocket                                       |
 | POCKET_HEALTH_CHECK        | Duration    | 30s                             | true        |                                                                    |
 | POCKET_POCKET_URL          | String      | https://getpocket.com/v3/get    | true        |                                                                    |
