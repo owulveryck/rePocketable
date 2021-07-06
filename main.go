@@ -20,12 +20,20 @@ func main() {
 	defer cancel()
 	dstDir := flag.String("dst", "testdata", "destination directory")
 	help := flag.Bool("h", false, "help")
+	doc := flag.Bool("d", false, "geretate usage for documentation (MD)")
 	flag.Parse()
 	if *help {
 		d := &http.Downloader{}
 		d.Usage()
 		p := &pocket.Pocket{}
 		p.Usage()
+		return
+	}
+	if *doc {
+		d := &http.Downloader{}
+		d.Doc(os.Stdout)
+		p := &pocket.Pocket{}
+		p.Doc(os.Stdout)
 		return
 	}
 	f, err := os.Open(filepath.Join(*dstDir, ".db"))
@@ -47,6 +55,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	go func() {
 		err = pocket.RunPoller(ctx)
 		if err != nil {

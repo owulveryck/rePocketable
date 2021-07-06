@@ -2,16 +2,27 @@ package pocket
 
 import (
 	"context"
+	"io"
 	"log"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/motemen/go-pocket/auth"
+	"github.com/owulveryck/rePocketable/internal/docs"
 	"github.com/owulveryck/rePocketable/internal/http"
 )
 
+const (
+	prefix = "POCKET"
+)
+
+func (p *Pocket) Doc(w io.Writer) {
+	docs.Usage(prefix, p, w)
+
+}
 func (p *Pocket) Usage() {
-	envconfig.Usage("POCKET", p)
+	envconfig.Usage(prefix, p)
+
 }
 
 type Pocket struct {
@@ -22,15 +33,15 @@ type Pocket struct {
 	Username        string        `envconfig:"USERNAME" desc:"The pocket username (will try to fetch it if not found)"`
 	Token           string        `envconfig:"TOKEN" desc:"The access token, will try to fetch it if not found or invalid"`
 	downloader      *http.Downloader
-	ItemsC          chan Item
+	ItemsC          chan Item `ignored:"true"`
 	auth            *auth.Authorization
 }
 
 func NewPocket(downloader *http.Downloader) (*Pocket, error) {
 	p := &Pocket{}
-	err := envconfig.Process("POCKET", p)
+	err := envconfig.Process(prefix, p)
 	if err != nil {
-		envconfig.Usage("POCKET", p)
+		envconfig.Usage(prefix, p)
 		return nil, err
 	}
 	p.downloader = downloader
