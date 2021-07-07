@@ -121,6 +121,21 @@ type Item struct {
 
 type Time time.Time
 
+func (t Time) MarshalBinary() (data []byte, err error) {
+	tim := time.Time(t)
+	return tim.MarshalBinary()
+}
+
+func (t *Time) UnmarshalBinary(data []byte) error {
+	var tim time.Time
+	err := tim.UnmarshalBinary(data)
+	if err != nil {
+		return err
+	}
+	*t = Time(tim)
+	return nil
+}
+
 func (t *Time) UnmarshalJSON(b []byte) error {
 	i, err := strconv.ParseInt(string(bytes.Trim(b, `"`)), 10, 64)
 	if err != nil {
