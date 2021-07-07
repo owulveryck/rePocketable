@@ -1,7 +1,6 @@
 package epub
 
 import (
-	"log"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -33,12 +32,12 @@ func (d *Document) Fill() error {
 	r := readability.New()
 	res, err := http.Get(d.item.ResolvedURL)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer res.Body.Close()
 	article, err := r.Parse(res.Body, d.item.ResolvedURL)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	err = d.setMeta(&article)
 	if err != nil {
