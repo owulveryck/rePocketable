@@ -1,6 +1,7 @@
 package epub
 
 import (
+	"context"
 	"log"
 	"os"
 
@@ -9,7 +10,7 @@ import (
 
 func ExampleDocument() {
 	d := NewDocument(pocket.Item{})
-	err := d.Fill()
+	err := d.Fill(context.TODO())
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -19,9 +19,9 @@ func NewDatabase() *Database {
 }
 
 func (d Database) Write(w io.Writer) error {
-	bkp := make(map[string]pocket.Item)
+	bkp := make(map[int]pocket.Item)
 	d.m.Range(func(key, value interface{}) bool {
-		k, ok := key.(string)
+		k, ok := key.(int)
 		if !ok {
 			return false
 		}
@@ -38,7 +38,7 @@ func (d Database) Write(w io.Writer) error {
 
 func (d *Database) Read(r io.Reader) error {
 	dec := gob.NewDecoder(r)
-	var bkp map[string]pocket.Item
+	var bkp map[int]pocket.Item
 	err := dec.Decode(&bkp)
 	if err != nil {
 		return err
@@ -50,15 +50,19 @@ func (d *Database) Read(r io.Reader) error {
 }
 
 // Store sets the value for a key.
-func (d *Database) Store(key string, value pocket.Item) {
+func (d *Database) Store(key int, value pocket.Item) {
 	d.m.Store(key, value)
 }
 
-func (d *Database) Load(key string) (value pocket.Item, ok bool) {
+func (d *Database) Load(key int) (value pocket.Item, ok bool) {
 	v, ok := d.m.Load(key)
 	if !ok {
 		return pocket.Item{}, ok
 	}
 	item, ok := v.(pocket.Item)
 	return item, ok
+}
+
+func (d *Database) Range(f func(key interface{}, value interface{}) bool) {
+	d.m.Range(f)
 }

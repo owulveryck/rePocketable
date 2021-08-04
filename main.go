@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
-	"encoding/gob"
 	"flag"
+	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	"github.com/owulveryck/rePocketable/internal/epub"
 	"github.com/owulveryck/rePocketable/internal/http"
@@ -16,65 +18,85 @@ import (
 var DB map[string]pocket.Item
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	dstDir := flag.String("dst", "testdata", "destination directory")
-	help := flag.Bool("h", false, "help")
-	doc := flag.Bool("d", false, "geretate usage for documentation (MD)")
-	flag.Parse()
-	if *help {
-		d := &http.Downloader{}
-		d.Usage()
-		p := &pocket.Pocket{}
-		p.Usage()
-		return
-	}
-	if *doc {
-		d := &http.Downloader{}
-		d.Doc(os.Stdout)
-		p := &pocket.Pocket{}
-		p.Doc(os.Stdout)
-		return
-	}
-	f, err := os.Open(filepath.Join(*dstDir, ".db"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	dec := gob.NewDecoder(f)
-	err = dec.Decode(&DB)
-	if err != nil {
-		log.Println("access db", err)
-	}
 
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	dstDir := flag.String("dst", "testdata", "destination directory")
+	dumpDB := flag.Bool("dump", false, "dump the content of the DB on stdout")
+	dumpDBHTML := flag.Bool("dumphtml", false, "dump the content of the DB on stdout")
+	if usage() {
+		return
+	}
+	if *dumpDB {
+		err := dumpContent(os.Stdout, filepath.Join(*dstDir, ".db"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+	if *dumpDBHTML {
+		err := dumpHTMLContent(os.Stdout, filepath.Join(*dstDir, ".db"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+	database := initDatabase(sigs, cancel, *dstDir)
 	downloader, err := http.NewDownloader()
 	if err != nil {
 		log.Fatal(err)
 	}
-	pocket, err := pocket.NewPocket(downloader)
+	myPocket, err := pocket.NewPocket(downloader)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	go func() {
-		err = pocket.RunPoller(ctx)
+		err = myPocket.RunPoller(ctx)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}()
-	for item := range pocket.ItemsC {
+	maxNbConcurrentGoroutines := 15
+	concurrentGoroutines := make(chan struct{}, maxNbConcurrentGoroutines)
+	// Fill the dummy channel with maxNbConcurrentGoroutines empty struct.
+	for i := 0; i < maxNbConcurrentGoroutines; i++ {
+		concurrentGoroutines <- struct{}{}
+	}
+	for item := range myPocket.ItemsC {
 		if item.IsArticle != 0 {
-			doc := epub.NewDocument(item)
-			err := doc.Fill()
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-			err = doc.Write(filepath.Join("testdata", item.ResolvedTitle+".epub"))
-			if err != nil {
-				log.Println(err)
-				continue
-			}
+			<-concurrentGoroutines
+			go func(item pocket.Item) {
+				defer func() {
+					if r := recover(); r != nil {
+						log.Println("Recovered:", r)
+					}
+					// Say that another goroutine can now start.
+					concurrentGoroutines <- struct{}{}
+				}()
+				log.Println("processing ", item.ItemID)
+				_, ok := database.Load(item.ItemID)
+				if ok {
+					log.Printf("%v already present (%v)", item.ItemID, item.ResolvedTitle)
+					return
+				}
+				doc := epub.NewDocument(item)
+				doc.Client = downloader.HTTPClient
+				err := doc.Fill(ctx)
+				if err != nil {
+					log.Println("Cannot fill document: ", err)
+					return
+				}
+				err = doc.Write(filepath.Join(*dstDir, fmt.Sprintf("%v.epub", item.ItemID)))
+				if err != nil {
+					log.Println("Cannot write document: ", err)
+					return
+				}
+				database.Store(item.ItemID, item)
+			}(item)
 		}
 	}
 }

@@ -1,3 +1,6 @@
 test.sh
 .envrc
 test.txt
+testdata/**
+testdata/.db
+testdata/.db

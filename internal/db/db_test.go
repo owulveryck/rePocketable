@@ -16,7 +16,8 @@ func TestDatabase(t *testing.T) {
 		TimeAdded: pocket.Time(date),
 	}
 	d := NewDatabase()
-	d.Store("test", originalItem)
+	d.Store(42, originalItem)
+	d.Store(43, originalItem)
 	var backup bytes.Buffer
 	err := d.Write(&backup)
 	if err != nil {
@@ -27,11 +28,15 @@ func TestDatabase(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	item, ok := d2.Load("test")
+	item, ok := d2.Load(42)
 	if !ok {
 		t.Fatal("value not found")
 	}
 	if !reflect.DeepEqual(originalItem, item) {
 		t.Fatalf("bad value, expected %v, got %v", time.Time(originalItem.TimeAdded), time.Time(item.TimeAdded))
+	}
+	_, ok = d2.Load(43)
+	if !ok {
+		t.Fatal("value not found")
 	}
 }

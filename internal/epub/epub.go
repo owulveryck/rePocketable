@@ -1,6 +1,8 @@
 package epub
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -17,6 +19,7 @@ type Document struct {
 	item        pocket.Item
 	buf         strings.Builder
 	currSection string
+	Client      *http.Client
 }
 
 func NewDocument(item pocket.Item) *Document {
@@ -28,16 +31,24 @@ func NewDocument(item pocket.Item) *Document {
 	}
 }
 
-func (d *Document) Fill() error {
+func (d *Document) Fill(ctx context.Context) error {
+	client := http.DefaultClient
+	if d.Client != nil {
+		client = d.Client
+	}
 	r := readability.New()
-	res, err := http.Get(d.item.ResolvedURL)
+	req, err := http.NewRequestWithContext(ctx, "GET", d.item.URL(), nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot create request: %w", err)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("cannot fetch document: %w", err)
 	}
 	defer res.Body.Close()
 	article, err := r.Parse(res.Body, d.item.ResolvedURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot parse document: %w", err)
 	}
 	err = d.setMeta(&article)
 	if err != nil {
