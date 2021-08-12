@@ -74,6 +74,7 @@ func main() {
 					if r := recover(); r != nil {
 						log.Println("Recovered:", r)
 					}
+					database.Store(item.ItemID, item)
 					// Say that another goroutine can now start.
 					concurrentGoroutines <- struct{}{}
 				}()
@@ -95,7 +96,6 @@ func main() {
 					log.Println("Cannot write document: ", err)
 					return
 				}
-				database.Store(item.ItemID, item)
 			}(item)
 		}
 	}
