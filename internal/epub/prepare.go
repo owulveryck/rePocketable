@@ -2,19 +2,21 @@ package epub
 
 import (
 	"bytes"
+	"fmt"
 	"io"
-	"log"
 	"regexp"
+	"strings"
 
 	"github.com/go-latex/latex/drawtex/drawimg"
 	"github.com/go-latex/latex/mtex"
 	"github.com/vincent-petithory/dataurl"
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 )
 
 const (
-	size = float64(12)
-	dpi  = float64(72)
+	size = float64(14)
+	dpi  = float64(96)
 )
 
 var mathJax = regexp.MustCompile(`\$\$[^\$]+\$\$`)
@@ -40,43 +42,46 @@ func hasMathJax(n *html.Node) bool {
 }
 
 func processMathTex(n *html.Node) error {
-	log.Println("Processing", n.Data)
-	log.Println(mathJax.FindAllString(n.Data, -1))
-	return nil
-	fnts := lmromanFonts()
-	var b bytes.Buffer
-	dst := drawimg.NewRenderer(&b)
-	err := mtex.Render(dst, n.FirstChild.Data, size, dpi, fnts)
-	if err != nil {
-		return err
-	}
-	dataURL := dataurl.New(b.Bytes(), "image/png")
-	content, err := dataURL.MarshalText()
-	if err != nil {
-		return err
-	}
-	n.Data = "img"
-	n.Attr = []html.Attribute{
-		{
-			Key: "src",
-			Val: string(content),
-		},
-	}
-
-	return nil
-}
-
-func hasAttribute(n *html.Node, attr html.Attribute) bool {
-	log.Println(n.Attr)
-	for i := 0; i < len(n.Attr); i++ {
-		if n.Attr[i].Key == attr.Key && n.Attr[i].Val == attr.Val {
-			return true
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
 		}
-	}
-	return false
-}
+	}()
+	completeText := n.Data
+	//	fnts := lmromanFonts()
+	fnts := liberationFonts()
 
-// math/tex; mode=display
+	allFormulas := mathJax.FindAll([]byte(completeText), -1)
+	images := make([]*html.Node, len(allFormulas))
+	for i, f := range allFormulas {
+		var b bytes.Buffer
+		dst := drawimg.NewRenderer(&b)
+		err := mtex.Render(dst, string(f[1:len(f)-1]), size, dpi, fnts)
+		if err != nil {
+			return err
+		}
+		dataURL := dataurl.New(b.Bytes(), "image/png")
+		content, err := dataURL.MarshalText()
+		if err != nil {
+			return err
+		}
+		images[i] = &html.Node{
+			Type:      html.ElementNode,
+			DataAtom:  atom.Img,
+			Data:      "img",
+			Namespace: n.Namespace,
+			Attr: []html.Attribute{
+				{
+					Key: "src",
+					Val: string(content),
+				},
+			},
+		}
+		n.Data = strings.ReplaceAll(n.Data, string(f), "")
+		n.Parent.AppendChild(images[i])
+	}
+	return nil
+}
 
 func processFigure(n *html.Node) error {
 	if n.Data == "noscript" {
