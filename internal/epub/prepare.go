@@ -24,7 +24,16 @@ var mathJax = regexp.MustCompile(`\$\$[^\$]+\$\$`)
 func preProcess(n *html.Node) error {
 	switch {
 	case n.Type == html.ElementNode && n.Data == "figure":
-		processFigure(n)
+		f := &figure{
+			images: make([]*html.Node, 0),
+		}
+		f.processFigure(n)
+		// Clear all other images (medium, towarddatascience, ...)
+		for _, img := range f.images {
+			if img != f.validImage {
+				img.Parent.RemoveChild(img)
+			}
+		}
 	case n.Type == html.TextNode && hasMathJax(n):
 		processMathTex(n)
 	}
@@ -83,7 +92,15 @@ func processMathTex(n *html.Node) error {
 	return nil
 }
 
-func processFigure(n *html.Node) error {
+type figure struct {
+	images     []*html.Node
+	validImage *html.Node
+}
+
+func (f *figure) processFigure(n *html.Node) error {
+	if n.Type == html.ElementNode && n.Data == "img" {
+		f.images = append(f.images, n)
+	}
 	if n.Data == "noscript" {
 		if originalImg := n.PrevSibling; originalImg.Data == "img" {
 			// the img data is encoded as a string in the n.FirstChild.Data field
@@ -96,10 +113,11 @@ func processFigure(n *html.Node) error {
 			if img != nil {
 				originalImg.Attr = img.Attr
 			}
+			f.validImage = originalImg
 		}
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		err := processFigure(c)
+		err := f.processFigure(c)
 		if err != io.EOF {
 			return err
 		}
