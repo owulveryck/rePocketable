@@ -9,13 +9,12 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 
 	"github.com/bmaupin/go-epub"
 	"github.com/cixtor/readability"
+	"github.com/google/uuid"
 	"github.com/owulveryck/rePocketable/internal/pocket"
 	"golang.org/x/net/html"
 )
@@ -26,6 +25,7 @@ type Document struct {
 	buf         strings.Builder
 	currSection string
 	Client      *http.Client
+	CSS         io.Reader
 }
 
 func NewDocument(item pocket.Item) *Document {
@@ -69,7 +69,6 @@ func (d *Document) Fill(ctx context.Context) error {
 			return
 		}
 	}()
-	html.Render(os.Stdout, doc)
 	article, err := r.Parse(pipeR, d.item.ResolvedURL)
 	if err != nil {
 		return fmt.Errorf("cannot parse document: %w", err)
@@ -82,12 +81,17 @@ func (d *Document) Fill(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	css, err := d.setCSS(article.Node)
+	if err != nil {
+		log.Println(err)
+	}
+
 	var body strings.Builder
 	err = html.Render(&body, article.Node)
 	if err != nil {
 		return err
 	}
-	_, err = d.AddSection(body.String(), "Content", "", "")
+	_, err = d.AddSection(body.String(), "Content", "", css)
 	return err
 }
 
@@ -146,7 +150,8 @@ func getURL(attr []html.Attribute) (source string, filename string, err error) {
 	if u.Host == "" {
 		u.Host = host
 	}
-	f := filepath.Base(u.Path)
+	f := uuid.New().String()
+	//f := filepath.Base(u.Path)
 	return u.String(), f, nil
 }
 

@@ -55,6 +55,7 @@ func main() {
 				log.Println("processing ", item.ItemID)
 				doc := epub.NewDocument(item)
 				doc.Client = downloader.HTTPClient
+				doc.CSS = css
 				err := doc.Fill(ctx)
 				if err != nil {
 					log.Println("Cannot fill document: ", err)
