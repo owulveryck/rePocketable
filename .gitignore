@@ -4,3 +4,5 @@ test.txt
 testdata/**
 testdata/.db
 testdata/.db
+
+dist/
