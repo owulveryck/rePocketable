@@ -1,4 +1,21 @@
-WIP
+# rePocketable
+
+[![GitHub go.mod Go version of a Go module](https://img.shields.io/github/go-mod/go-version/gomods/athens.svg)](https://github.com/gomods/athens)
+[![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg)
+[![macOS](https://svgshare.com/i/ZjP.svg)](https://svgshare.com/i/ZjP.svg)
+[![Windows](https://svgshare.com/i/ZhY.svg)](https://svgshare.com/i/ZhY.svg)
+[![Build](https://github.com/owulveryck/rePocketable/actions/workflows/go.yml/badge.svg)](https://github.com/owulveryck/rePocketable/actions/workflows/go.yml)
+
+This tool and its webpage are under construction.
+
+Best possible option if you want to see what it will eventually do is to run a cli tool such as to epub:
+
+```shell
+go run cmd/toEpub/*.go https://whateverpageyouwanttoread/
+```
+
+
+## Configurations
 
 | KEY                             | TYPE        | DEFAULT    | REQUIRED    | DESCRIPTION    |
 |---------------------------------|-------------|------------|-------------|----------------|
