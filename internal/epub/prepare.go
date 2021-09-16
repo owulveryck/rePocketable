@@ -29,9 +29,11 @@ func preProcess(n *html.Node) error {
 		}
 		f.processFigure(n)
 		// Clear all other images (medium, towarddatascience, ...)
-		for _, img := range f.images {
-			if img != f.validImage {
-				img.Parent.RemoveChild(img)
+		if len(f.images) > 1 {
+			for _, img := range f.images {
+				if img != f.validImage {
+					img.Parent.RemoveChild(img)
+				}
 			}
 		}
 	case n.Type == html.TextNode && hasMathJax(n):
