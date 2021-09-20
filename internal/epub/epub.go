@@ -13,9 +13,9 @@ import (
 	"strings"
 
 	"github.com/bmaupin/go-epub"
-	"github.com/cixtor/readability"
 	"github.com/google/uuid"
 	"github.com/owulveryck/rePocketable/internal/pocket"
+	"github.com/owulveryck/readability"
 	"golang.org/x/net/html"
 )
 
