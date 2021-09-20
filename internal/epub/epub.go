@@ -40,6 +40,7 @@ func NewDocument(item pocket.Item) *Document {
 func (d *Document) Fill(ctx context.Context) error {
 	client := http.DefaultClient
 	if d.Client != nil {
+		//d.Epub.Client = d.Client
 		client = d.Client
 	}
 	r := readability.New()
@@ -81,7 +82,7 @@ func (d *Document) Fill(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	css, err := d.setCSS(article.Node)
+	css, err := d.setCSS()
 	if err != nil {
 		log.Println(err)
 	}
@@ -91,16 +92,22 @@ func (d *Document) Fill(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	d.createMeta()
+
 	_, err = d.AddSection(body.String(), "Content", "", css)
 	return err
 }
 
 func (d *Document) setMeta(a *readability.Article) error {
-	d.SetTitle(d.item.ResolvedTitle)
+	d.SetTitle(a.Title)
 	d.SetDescription(d.item.Excerpt)
 	d.SetAuthor(a.Byline)
 	if a.Image != "" {
-		img, err := d.AddImage(a.Image, "")
+		img, err := imageToCover(a.Image, a.Title, a.Byline, a.SiteName)
+		if err != nil {
+			return err
+		}
+		img, err = d.AddImage(img, "")
 		if err != nil {
 			return err
 		}

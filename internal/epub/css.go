@@ -3,11 +3,9 @@ package epub
 import (
 	"io"
 	"io/ioutil"
-
-	"golang.org/x/net/html"
 )
 
-func (d *Document) setCSS(n *html.Node) (string, error) {
+func (d *Document) setCSS() (string, error) {
 	if d.CSS == nil {
 		return "", nil
 	}
@@ -15,6 +13,7 @@ func (d *Document) setCSS(n *html.Node) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer file.Close()
 	//defer os.Remove(file.Name())
 	_, err = io.Copy(file, d.CSS)
 	if err != nil {
