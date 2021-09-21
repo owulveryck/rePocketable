@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/bmaupin/go-epub"
+	"github.com/dyatlov/go-opengraph/opengraph"
 	"github.com/google/uuid"
 	"github.com/owulveryck/rePocketable/internal/pocket"
 	"github.com/owulveryck/readability"
@@ -26,6 +27,7 @@ type Document struct {
 	currSection string
 	Client      *http.Client
 	CSS         io.Reader
+	OG          *opengraph.OpenGraph
 }
 
 func NewDocument(item pocket.Item) *Document {
@@ -53,7 +55,10 @@ func (d *Document) Fill(ctx context.Context) error {
 		return fmt.Errorf("cannot fetch document: %w", err)
 	}
 	defer res.Body.Close()
-	doc, err := html.Parse(res.Body)
+
+	og, content := getOpenGraph(res.Body)
+	d.OG = og
+	doc, err := html.Parse(content)
 	if err != nil {
 		return err
 	}
@@ -61,6 +66,7 @@ func (d *Document) Fill(ctx context.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	//article, err := r.Parse(res.Body, d.item.ResolvedURL)
 	pipeR, pipeW := io.Pipe()
 	go func() {
@@ -100,7 +106,7 @@ func (d *Document) Fill(ctx context.Context) error {
 
 func (d *Document) setMeta(a *readability.Article) error {
 	d.SetTitle(a.Title)
-	d.SetDescription(d.item.Excerpt)
+	d.SetDescription(d.OG.Description)
 	d.SetAuthor(a.Byline)
 	if a.Image != "" {
 		img, err := imageToCover(a.Image, a.Title, a.Byline, a.SiteName)

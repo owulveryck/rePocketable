@@ -14,7 +14,9 @@ type metaStruct struct {
 	Website   string
 	Build     string
 	Published string
+	Modified  string
 	Summary   string
+	Tags      []string
 }
 
 var metaTmpl = template.Must(template.New("meta").Parse(meta))
@@ -37,16 +39,24 @@ const (
 			<td><a href="{{ .Website }}">{{ .Website }}</a></td>
 		</tr>
 		<tr>
-			<th>Build time</th>
-			<td>{{ .Build }}</td>
-		</tr>
-		<tr>
 			<th>Published time</th>
 			<td>{{ .Published }}</td>
 		</tr>
 		<tr>
+			<th>Modified time</th>
+			<td>{{ .Modified }}</td>
+		</tr>
+		<tr>
 			<th>Summary</th>
 			<td>{{ .Summary }}</td>
+		</tr>
+		<tr>
+			<th>Tags</th>
+			<td>{{ .Tags }}</td>
+		</tr>
+		<tr>
+			<th>Epub build time</th>
+			<td>{{ .Build }}</td>
 		</tr>
 	</tbody>
 </table>
@@ -80,13 +90,23 @@ func (d *Document) createMeta() error {
 		return err
 	}
 	var metaInfo strings.Builder
-	metaTmpl.Execute(&metaInfo, metaStruct{
+	mi := metaStruct{
 		Author:  d.Author(),
 		Title:   d.Title(),
 		Summary: d.Description(),
 		Build:   time.Now().Format("2006-02-01 15:04:05"),
 		Website: d.item.ResolvedURL,
-	})
+	}
+	if d.OG != nil && d.OG.Article != nil {
+		if d.OG.Article.PublishedTime != nil {
+			mi.Published = d.OG.Article.PublishedTime.Format("2006-02-01 15:04:05")
+		}
+		if d.OG.Article.ModifiedTime != nil {
+			mi.Modified = d.OG.Article.ModifiedTime.Format("2006-02-01 15:04:05")
+		}
+		mi.Tags = d.OG.Article.Tags
+	}
+	metaTmpl.Execute(&metaInfo, mi)
 	_, err = d.AddSection(metaInfo.String(), "meta", "", css)
 	return err
 }
