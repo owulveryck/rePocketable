@@ -6,3 +6,4 @@ testdata/.db
 testdata/.db
 
 dist/
+cmd/getPocketDaemon/testdata/
