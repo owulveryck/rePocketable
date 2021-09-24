@@ -1,7 +1,9 @@
-github.com/bmaupin/go-epub v0.7.3-0.20210824172218-95bfe4c48859 h1:ajKe2h6oPTGo7fKMhJoAmY3tKIrWHzvfo3iRej6SJ6A=
-github.com/bmaupin/go-epub v0.7.3-0.20210824172218-95bfe4c48859/go.mod h1:mBan+0WgVv5JbPNw1xfnfQoTRN9iPMKBshZwPOL0SY0=
+github.com/bmaupin/go-epub v0.9.0 h1:ewGWcGF2ECokLG4Fe7oLl/uWZeepFD345rs8CChHC74=
+github.com/bmaupin/go-epub v0.9.0/go.mod h1:mBan+0WgVv5JbPNw1xfnfQoTRN9iPMKBshZwPOL0SY0=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/boombuler/barcode v1.0.1/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
+github.com/cixtor/readability v1.0.1-0.20210921191510-3f20b8dcf057 h1:L+UQNGXkDFYi1ABlnU+LU2kE9cRedxMf+uQsHfTLbRI=
+github.com/cixtor/readability v1.0.1-0.20210921191510-3f20b8dcf057/go.mod h1:WDrZcthrR2RVDxfMu3q0q59UKhReo5mIZAM6w1+MgFo=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/disintegration/imaging v1.6.2 h1:w1LecBlG2Lnp8B3jk5zSuNqd7b4DXhcjwek1ei82L+c=
 github.com/disintegration/imaging v1.6.2/go.mod h1:44/5580QXChDfwIclfc/PCwrr44amcmDAg8hxG0Ewe4=
@@ -40,8 +42,6 @@ github.com/motemen/go-pocket v0.0.0-20201204003030-43b897100651/go.mod h1:bg7ss2
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.3 h1:RE1xgDvH7imwFD45h+u2SgIfERHlS2yNG4DObb5BSKU=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
-github.com/owulveryck/readability v1.0.0 h1:z3NyDVzLQrBx2edF4PYtV6ObeBwRNXMPGAvXXx1vhlA=
-github.com/owulveryck/readability v1.0.0/go.mod h1:4dfutrRZ1+bq3rHKh5nIMw82GQuqOHBDd4vSy/hZfOs=
 github.com/phpdave11/gofpdf v1.4.2/go.mod h1:zpO6xFn9yxo3YLyMvW8HcKWVdbNqgIfOOp2dXMnm1mY=
 github.com/phpdave11/gofpdi v1.0.12/go.mod h1:vBmVV0Do6hSBHC8uKUQ71JGW+ZGQq74llk/7bXwjDoI=
 github.com/phpdave11/gofpdi v1.0.13/go.mod h1:vBmVV0Do6hSBHC8uKUQ71JGW+ZGQq74llk/7bXwjDoI=
