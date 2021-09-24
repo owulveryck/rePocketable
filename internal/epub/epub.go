@@ -13,10 +13,10 @@ import (
 	"strings"
 
 	"github.com/bmaupin/go-epub"
+	"github.com/cixtor/readability"
 	"github.com/dyatlov/go-opengraph/opengraph"
 	"github.com/google/uuid"
 	"github.com/owulveryck/rePocketable/internal/pocket"
-	"github.com/owulveryck/readability"
 	"golang.org/x/net/html"
 )
 
@@ -42,7 +42,7 @@ func NewDocument(item pocket.Item) *Document {
 func (d *Document) Fill(ctx context.Context) error {
 	client := http.DefaultClient
 	if d.Client != nil {
-		//d.Epub.Client = d.Client
+		d.Epub.Client = d.Client
 		client = d.Client
 	}
 	r := readability.New()
