@@ -32,12 +32,16 @@ The internal libraries (used by the CLI) are implemeting those features:
 
 ## Configurations
 
+Those configuration may influence various internal libraries.
+
 | KEY                             | TYPE        | DEFAULT    | REQUIRED    | DESCRIPTION    |
 |---------------------------------|-------------|------------|-------------|----------------|
 | DOWNLOADER_LIVENESS_CHECK       | Duration    | 5m         | true        |                |
 | DOWNLOADER_PROBE_TIMEOUT        | Duration    | 60m        | true        |                |
 | DOWNLOADER_HTTP_TIMEOUT         | Duration    | 10s        | true        |                |
 | DOWNLOADER_TRANSPORT_TIMEOUT    | Duration    | 5s         | true        |                |
+
+Those configuration are used for cli using the pocket integration
 
 | KEY                        | TYPE        | DEFAULT                         | REQUIRED    | DESCRIPTION                                                        |
 |----------------------------|-------------|---------------------------------|-------------|--------------------------------------------------------------------|
