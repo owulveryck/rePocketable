@@ -1,10 +1,11 @@
-//go:build !js || !wasm
-// +build !js !wasm
+//go:build js && wasm
+// +build js,wasm
 
 package http
 
 import (
 	"io"
+	"log"
 	"net"
 	"net/http"
 
@@ -35,16 +36,27 @@ func NewDownloader() (*Downloader, error) {
 	}
 
 	// Create the default client
-	var netTransport = &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: d.TransportTimeout,
-		}).Dial,
-		TLSHandshakeTimeout: d.TransportTimeout,
-	}
+	var netTransport = &corsCompatibleTransport{
+		&http.Transport{
+			Dial: (&net.Dialer{
+				Timeout: d.TransportTimeout,
+			}).Dial,
+			TLSHandshakeTimeout: d.TransportTimeout,
+		}}
 
 	d.HTTPClient = &http.Client{
 		Timeout:   d.HTTPTimeout,
 		Transport: netTransport,
 	}
 	return d, nil
+}
+
+type corsCompatibleTransport struct {
+	*http.Transport
+}
+
+func (c *corsCompatibleTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	log.Println("setting fetch mode to no-cors")
+	req.Header.Set("js.fetch:mode", "no-cors")
+	return c.Transport.RoundTrip(req)
 }
