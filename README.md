@@ -14,6 +14,17 @@ Best possible option if you want to see what it will eventually do is to run a c
 go run cmd/toEpub/*.go https://whateverpageyouwanttoread/
 ```
 
+## Hacktoberfest
+
+This is a toy project, but I am more and more relying on it. I think that hacktoberfest is a good opportunity to turn this project into a product.
+I will write a contributing guide soon; meanwhile if you want to participate the urgent matters are:
+
+- Writing a proper vision: discussing it into an issue and submitting a PR to mention in in the README
+- Writing autonomous end-to-end tests: grabbing a sample page, running an `httptest` server, running a toEpub code and analysing the result
+- Writing a proper documentation
+- Adding a contribution guide
+- sky is the limit, discuss in issues and submit PR once issues are discussed :D 
+
 ## Features
 
 The internal libraries (used by the CLI) are implemeting those features:
