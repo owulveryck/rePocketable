@@ -14,6 +14,8 @@ Best possible option if you want to see what it will eventually do is to run a c
 go run cmd/toEpub/*.go https://whateverpageyouwanttoread/
 ```
 
+I wrote some explanation of the concept in a [blog post](https://blog.owulveryck.info/2021/10/07/reading-from-the-web-offline-and-distraction-free.html)
+
 ## Hacktoberfest
 
 This is a toy project, but I am more and more relying on it. I think that hacktoberfest is a good opportunity to turn this project into a product.
