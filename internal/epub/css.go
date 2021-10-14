@@ -1,23 +1,15 @@
 package epub
 
 import (
-	"io"
 	"io/ioutil"
+
+	"github.com/vincent-petithory/dataurl"
 )
 
 func (d *Document) setCSS() (string, error) {
-	if d.CSS == nil {
-		return "", nil
-	}
-	file, err := ioutil.TempFile("", "mystyle*.css")
+	content, err := ioutil.ReadAll(d.CSS)
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
-	//defer os.Remove(file.Name())
-	_, err = io.Copy(file, d.CSS)
-	if err != nil {
-		return "", err
-	}
-	return d.Epub.AddCSS(file.Name(), "")
+	return d.Epub.AddCSS(dataurl.EncodeBytes(content), "")
 }

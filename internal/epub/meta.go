@@ -1,11 +1,11 @@
 package epub
 
 import (
-	"fmt"
 	"html/template"
-	"io/ioutil"
 	"strings"
 	"time"
+
+	"github.com/vincent-petithory/dataurl"
 )
 
 type metaStruct struct {
@@ -78,14 +78,9 @@ const (
 )
 
 func (d *Document) createMeta() error {
-	file, err := ioutil.TempFile("", "mystyle*.css")
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	fmt.Fprint(file, cssMeta)
+	dataurl.EncodeBytes([]byte(cssMeta))
 	//defer os.Remove(file.Name())
-	css, err := d.Epub.AddCSS(file.Name(), "")
+	css, err := d.Epub.AddCSS(dataurl.EncodeBytes([]byte(cssMeta)), "")
 	if err != nil {
 		return err
 	}
