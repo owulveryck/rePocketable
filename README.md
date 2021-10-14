@@ -14,6 +14,8 @@ Best possible option if you want to see what it will eventually do is to run a c
 go run cmd/toEpub/*.go https://whateverpageyouwanttoread/
 ```
 
+I wrote some explanation of the concept in a [blog post](https://blog.owulveryck.info/2021/10/07/reading-from-the-web-offline-and-distraction-free.html)
+
 ## Hacktoberfest
 
 This is a toy project, but I am more and more relying on it. I think that hacktoberfest is a good opportunity to turn this project into a product.
@@ -31,12 +33,12 @@ The internal libraries (used by the CLI) are implemeting those features:
 
 - Webpage fetching and pre-processing
   - preprocessing and sanitization of figures to fetch the correct image from responsive and/or javascript tags (Medium and Toward datascience)
-  - experimental feature to turn LaTeX figures into pictures ([github.com/go-latex/latex](github.com/go-latex/latex))
-  - extraction of the content based on the ARC90 readility project ([github.com/cixtor/readability](github.com/cixtor/readability))
-- Opengraph processing to extract meta informations ([github.com/dyatlov/go-opengraph](github.com/dyatlov/go-opengraph))
+  - experimental feature to turn LaTeX figures into pictures ([github.com/go-latex/latex](https://github.com/go-latex/latex))
+  - extraction of the content based on the ARC90 readility project ([github.com/cixtor/readability](https://github.com/cixtor/readability))
+- Opengraph processing to extract meta informations ([github.com/dyatlov/go-opengraph](https://github.com/dyatlov/go-opengraph))
   - Generation of a cover picture with the front image of the website, the title and the author of the artible
   - Generation of a first chapter with meta data such as the publication date
-- epub generation ([github.com/bmaupin/go-epub](github.com/bmaupin/go-epub))
+- epub generation ([github.com/bmaupin/go-epub](https://github.com/bmaupin/go-epub))
 - experimental getpocket integration
   - reading the article lists and generating epubs from the list
   - a daemon mode that will eventually runs on a ereader device to sync the list (heavy WIP)
