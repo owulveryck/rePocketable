@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	goepub "github.com/bmaupin/go-epub"
 	"github.com/owulveryck/rePocketable/internal/epub"
 	"github.com/owulveryck/rePocketable/internal/http"
 	"github.com/owulveryck/rePocketable/internal/pocket"
@@ -16,7 +15,6 @@ import (
 var DB map[string]pocket.Item
 
 func main() {
-	goepub.Use(goepub.MemoryFS)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

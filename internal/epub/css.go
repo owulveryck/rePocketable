@@ -3,6 +3,7 @@ package epub
 import (
 	"io/ioutil"
 
+	"github.com/gofrs/uuid"
 	"github.com/vincent-petithory/dataurl"
 )
 
@@ -11,5 +12,5 @@ func (d *Document) setCSS() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return d.Epub.AddCSS(dataurl.EncodeBytes(content), "")
+	return d.Epub.AddCSS(dataurl.EncodeBytes(content), uuid.Must(uuid.NewV4()).String()+".css")
 }

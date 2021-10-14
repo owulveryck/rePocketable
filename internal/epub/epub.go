@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"sort"
 	"strings"
 
@@ -31,6 +32,7 @@ type Document struct {
 }
 
 func NewDocument(item pocket.Item) *Document {
+	epub.Use(epub.MemoryFS)
 	return &Document{
 		Epub:        epub.NewEpub(""),
 		item:        item,
@@ -55,12 +57,18 @@ func (d *Document) Fill(ctx context.Context) error {
 		return fmt.Errorf("cannot fetch document: %w", err)
 	}
 	defer res.Body.Close()
+	log.Println(res.Status)
+	io.Copy(os.Stderr, res.Body)
+	return nil
 
 	og, content := getOpenGraph(res.Body)
 	d.OG = og
 	doc, err := html.Parse(content)
 	if err != nil {
 		return err
+	}
+	if doc.Type == html.ErrorNode {
+		return fmt.Errorf("cannot parse content: Node type is ErrorNode: %v", doc.Data)
 	}
 	err = preProcess(doc)
 	if err != nil {
@@ -73,6 +81,7 @@ func (d *Document) Fill(ctx context.Context) error {
 		defer pipeW.Close()
 		err = html.Render(pipeW, doc)
 		if err != nil {
+			log.Println("cannot render node after preprocessing: %w", err)
 			return
 		}
 	}()
@@ -80,9 +89,15 @@ func (d *Document) Fill(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("cannot parse document: %w", err)
 	}
+	if article.Node.Type == html.ErrorNode {
+		return fmt.Errorf("node type is ErrorNode: %v", article.Node)
+	}
 	err = d.setMeta(&article)
 	if err != nil {
 		return err
+	}
+	if article.Node.Type == html.ErrorNode {
+		return fmt.Errorf("meta: node type is ErrorNode: %v", article.Node)
 	}
 	err = d.replaceImages(article.Node)
 	if err != nil {
@@ -96,7 +111,7 @@ func (d *Document) Fill(ctx context.Context) error {
 	var body strings.Builder
 	err = html.Render(&body, article.Node)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot render section: %w", err)
 	}
 	d.createMeta()
 

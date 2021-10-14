@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/vincent-petithory/dataurl"
 )
 
@@ -80,7 +81,7 @@ const (
 func (d *Document) createMeta() error {
 	dataurl.EncodeBytes([]byte(cssMeta))
 	//defer os.Remove(file.Name())
-	css, err := d.Epub.AddCSS(dataurl.EncodeBytes([]byte(cssMeta)), "")
+	css, err := d.Epub.AddCSS(dataurl.EncodeBytes([]byte(cssMeta)), uuid.Must(uuid.NewV4()).String()+".css")
 	if err != nil {
 		return err
 	}

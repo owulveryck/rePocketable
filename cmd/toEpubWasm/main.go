@@ -6,7 +6,6 @@ import (
 	"log"
 	"path/filepath"
 
-	goepub "github.com/bmaupin/go-epub"
 	"github.com/owulveryck/rePocketable/internal/epub"
 	"github.com/owulveryck/rePocketable/internal/http"
 	"github.com/owulveryck/rePocketable/internal/pocket"
@@ -15,7 +14,6 @@ import (
 var DB map[string]pocket.Item
 
 func main() {
-	goepub.Use(goepub.MemoryFS)
 
 	content := "https://blog.owulveryck.info/2021/06/08/pov-a-streaming/communication-platform-for-the-data-mesh.html"
 
