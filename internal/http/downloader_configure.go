@@ -23,7 +23,7 @@ func (d *Downloader) Usage() {
 }
 
 // Configure the provider with environment variables
-func NewDownloader() (*Downloader, error) {
+func NewDownloader(withHeaders http.Header) (*Downloader, error) {
 	d := &Downloader{}
 	err := envconfig.Process(prefix, d)
 	if err != nil {
@@ -32,11 +32,14 @@ func NewDownloader() (*Downloader, error) {
 	}
 
 	// Create the default client
-	var netTransport = &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: d.TransportTimeout,
-		}).Dial,
-		TLSHandshakeTimeout: d.TransportTimeout,
+	var netTransport = &customTransport{
+		Transport: &http.Transport{
+			Dial: (&net.Dialer{
+				Timeout: d.TransportTimeout,
+			}).Dial,
+			TLSHandshakeTimeout: d.TransportTimeout,
+		},
+		headers: withHeaders,
 	}
 
 	d.HTTPClient = &http.Client{
@@ -44,4 +47,16 @@ func NewDownloader() (*Downloader, error) {
 		Transport: netTransport,
 	}
 	return d, nil
+}
+
+type customTransport struct {
+	headers http.Header
+	*http.Transport
+}
+
+func (c *customTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if c.headers != nil {
+		req.Header = c.headers
+	}
+	return c.Transport.RoundTrip(req)
 }

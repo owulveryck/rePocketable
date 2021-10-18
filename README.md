@@ -14,6 +14,18 @@ Best possible option if you want to see what it will eventually do is to run a c
 go run cmd/toEpub/*.go https://whateverpageyouwanttoread/
 ```
 
+This utility takes optional `-H` arguments to pass headers to the http downloader.
+This option can be used several times to be compatible with the curl command.
+
+ex:
+
+```shell
+ toEpub -H 'sec-ch-ua: "Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"' \
+  -H 'Referer: https://www.feynmanlectures.caltech.edu/I_01.html' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36' \
+  -H 'sec-ch-ua-platform: "macOS"'  https://thewebsite/thepage.html
+```
+
 I wrote some explanation of the concept in a [blog post](https://blog.owulveryck.info/2021/10/07/reading-from-the-web-offline-and-distraction-free.html)
 
 ## Hacktoberfest
