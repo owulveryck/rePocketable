@@ -122,7 +122,7 @@ func (d *Document) setMeta(a *readability.Article) error {
 	return nil
 }
 
-func getURL(attr []html.Attribute) (source string, filename string, err error) {
+func (d *Document) getURL(attr []html.Attribute) (source string, filename string, err error) {
 	var val string
 	var host, scheme string
 	for i := 0; i < len(attr); i++ {
@@ -137,6 +137,18 @@ func getURL(attr []html.Attribute) (source string, filename string, err error) {
 			if val == "" {
 				val = a.Val
 			}
+		}
+		if a.Key == "data-src" {
+			u, err := url.Parse(a.Val)
+			if err != nil {
+				return "", "", err
+			}
+			scheme = u.Scheme
+			host = u.Host
+			if val == "" {
+				val = a.Val
+			}
+			attr[i].Key = "src"
 		}
 		if a.Key == "srcset" {
 			set, err := csv.NewReader(bytes.NewBufferString(a.Val)).Read()
@@ -163,6 +175,16 @@ func getURL(attr []html.Attribute) (source string, filename string, err error) {
 	if u.Host == "" {
 		u.Host = host
 	}
+	// if no scheme, force https
+	if u.Scheme == "" {
+		ru, _ := url.Parse(d.item.ResolvedURL)
+		u.Scheme = ru.Scheme
+
+	}
+	if u.Host == "" {
+		ru, _ := url.Parse(d.item.ResolvedURL)
+		u.Host = ru.Host
+	}
 	f := uuid.New().String()
 	//f := filepath.Base(u.Path)
 	return u.String(), f, nil
@@ -170,7 +192,7 @@ func getURL(attr []html.Attribute) (source string, filename string, err error) {
 
 func (d *Document) replaceImages(n *html.Node) error {
 	if n.Type == html.ElementNode && n.Data == "img" {
-		val, f, err := getURL(n.Attr)
+		val, f, err := d.getURL(n.Attr)
 		if err != nil {
 			return err
 		}
