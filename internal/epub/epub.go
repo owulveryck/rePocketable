@@ -3,19 +3,20 @@ package epub
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
 	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"sort"
 	"strings"
 
 	"github.com/bmaupin/go-epub"
 	"github.com/cixtor/readability"
 	"github.com/dyatlov/go-opengraph/opengraph"
-	"github.com/google/uuid"
 	"github.com/owulveryck/rePocketable/internal/pocket"
 	"golang.org/x/net/html"
 )
@@ -185,8 +186,7 @@ func (d *Document) getURL(attr []html.Attribute) (source string, filename string
 		ru, _ := url.Parse(d.item.ResolvedURL)
 		u.Host = ru.Host
 	}
-	f := uuid.New().String()
-	//f := filepath.Base(u.Path)
+	f := fmt.Sprintf("%x.%v", md5.Sum([]byte(u.String())), filepath.Ext(val))
 	return u.String(), f, nil
 }
 

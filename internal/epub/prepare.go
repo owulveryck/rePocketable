@@ -2,8 +2,8 @@ package epub
 
 import (
 	"bytes"
-	"fmt"
 	"io"
+	"log"
 	"regexp"
 	"strings"
 
@@ -19,7 +19,7 @@ const (
 	dpi  = float64(96)
 )
 
-var mathJax = regexp.MustCompile(`\$\$[^\$]+\$\$`)
+var mathJax = regexp.MustCompile(`\$\$?[^\$]+\$?\$`)
 
 func preProcess(n *html.Node) error {
 	switch {
@@ -53,9 +53,10 @@ func hasMathJax(n *html.Node) bool {
 }
 
 func processMathTex(n *html.Node) error {
+	var currentFormula []byte
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("Recovered in f", r)
+			log.Printf("mathjax processing error: recovered %v in %s", r, currentFormula)
 		}
 	}()
 	completeText := n.Data
@@ -64,10 +65,16 @@ func processMathTex(n *html.Node) error {
 
 	allFormulas := mathJax.FindAll([]byte(completeText), -1)
 	images := make([]*html.Node, len(allFormulas))
-	for i, f := range allFormulas {
+	var i int
+	var remaining string
+	var delete bool
+	for i, currentFormula = range allFormulas {
+		expr := strings.TrimFunc(string(currentFormula), func(r rune) bool {
+			return r == '$'
+		})
 		var b bytes.Buffer
 		dst := drawimg.NewRenderer(&b)
-		err := mtex.Render(dst, string(f[1:len(f)-1]), size, dpi, fnts)
+		err := mtex.Render(dst, "$"+expr+"$", size, dpi, fnts)
 		if err != nil {
 			return err
 		}
@@ -88,8 +95,35 @@ func processMathTex(n *html.Node) error {
 				},
 			},
 		}
-		n.Data = strings.ReplaceAll(n.Data, string(f), "")
-		n.Parent.AppendChild(images[i])
+		delete = true
+		if remaining == "" {
+			remaining = n.Data
+		}
+		data := strings.SplitN(remaining, string(currentFormula), 2)
+		remaining = data[1]
+		firstpart := &html.Node{
+			Type:      n.Type,
+			DataAtom:  n.DataAtom,
+			Data:      data[0],
+			Namespace: n.Namespace,
+			Attr:      n.Attr,
+		}
+		n.Parent.InsertBefore(images[i], n)
+		n.Parent.InsertBefore(firstpart, images[i])
+		//n.Parent.AppendChild(images[i])
+	}
+	if remaining != "" {
+		n.Parent.InsertBefore(&html.Node{
+			Type:      n.Type,
+			DataAtom:  n.DataAtom,
+			Data:      remaining,
+			Namespace: n.Namespace,
+			Attr:      n.Attr,
+		}, n)
+	}
+	if delete {
+		n.Data = ""
+		//n.Parent.RemoveChild(n)
 	}
 	return nil
 }
