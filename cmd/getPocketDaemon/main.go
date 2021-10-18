@@ -45,7 +45,7 @@ func main() {
 		return
 	}
 	database := initDatabase(sigs, cancel, *dstDir)
-	downloader, err := http.NewDownloader()
+	downloader, err := http.NewDownloader(nil)
 	if err != nil {
 		log.Fatal(err)
 	}

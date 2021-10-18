@@ -19,7 +19,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	downloader, err := http.NewDownloader()
+	downloader, err := http.NewDownloader(nil)
 	if err != nil {
 		log.Fatal(err)
 	}
