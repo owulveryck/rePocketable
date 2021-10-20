@@ -76,10 +76,6 @@ func processMathTex(n *html.Node, inline bool) error {
 		allFormulas = mathJax.FindAll([]byte(completeText), -1)
 	} else {
 		allFormulas = extractTex(completeText)
-		for i := 0; i < len(allFormulas); i++ {
-			log.Println(string(allFormulas[i]))
-		}
-		log.Println("")
 	}
 	images := make([]*html.Node, len(allFormulas))
 	var i int
