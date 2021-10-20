@@ -1,6 +1,7 @@
 package epub
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -74,16 +75,11 @@ func processMathTex(n *html.Node, inline bool) error {
 	if inline {
 		allFormulas = mathJax.FindAll([]byte(completeText), -1)
 	} else {
-		begin := regexp.MustCompile(`(?m)^\\begin`)
-		beginIndex := begin.FindStringIndex(n.Data)
-		end := regexp.MustCompile(`(?m)^\\end.*`)
-		endIndices := end.FindAllStringIndex(n.Data, -1)
-		if len(endIndices) > 0 {
-			endIndex := endIndices[len(endIndices)-1]
-			if len(beginIndex) != 0 && len(endIndex) != 0 {
-				allFormulas = append(allFormulas, []byte(n.Data[beginIndex[0]:endIndex[1]]))
-			}
+		allFormulas = extractTex(completeText)
+		for i := 0; i < len(allFormulas); i++ {
+			log.Println(string(allFormulas[i]))
 		}
+		log.Println("")
 	}
 	images := make([]*html.Node, len(allFormulas))
 	var i int
@@ -137,6 +133,12 @@ func processMathTex(n *html.Node, inline bool) error {
 			Namespace: n.Namespace,
 			Attr:      n.Attr,
 		}
+		n.Parent.InsertBefore(&html.Node{
+			Type:      html.CommentNode,
+			DataAtom:  atom.Content,
+			Data:      expr,
+			Namespace: n.Namespace,
+		}, n)
 		n.Parent.InsertBefore(images[i], n)
 		n.Parent.InsertBefore(firstpart, images[i])
 	}
@@ -153,4 +155,56 @@ func processMathTex(n *html.Node, inline bool) error {
 		n.Data = ""
 	}
 	return nil
+}
+
+func extractTex(input string) [][]byte {
+	scanner := bufio.NewScanner(strings.NewReader(input))
+	beginEquation := []byte(`\begin`)
+	endEquation := []byte(`\end`)
+	split := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		if len(data) >= len(beginEquation) {
+			if string(data[0:len(beginEquation)]) == string(beginEquation) {
+				return len(beginEquation), beginEquation, nil
+			}
+		}
+		if len(data) >= len(endEquation) {
+			if string(data[0:len(endEquation)]) == string(endEquation) {
+				var b strings.Builder
+				var i int
+				for i = 0; i < len(data); i++ {
+					b.WriteByte(data[i])
+					if rune(data[i]) == '}' {
+						break
+					}
+				}
+				if i == len(data) {
+					return b.Len(), []byte(b.String()), io.EOF
+				}
+				return b.Len(), []byte(b.String()), nil
+			}
+		}
+		return 1, data[0:1], nil
+	}
+	scanner.Split(split)
+	inEquation := 0
+	var b strings.Builder
+	output := make([][]byte, 0)
+	for scanner.Scan() {
+		current := scanner.Text()
+		if current == string(beginEquation) {
+			inEquation++
+		}
+		if inEquation > 0 {
+			b.WriteString(current)
+		}
+		if strings.HasPrefix(current, string(endEquation)) {
+			inEquation--
+		}
+		if inEquation == 0 && b.Len() > 0 {
+			output = append(output, []byte(b.String()))
+			b.Reset()
+		}
+	}
+
+	return output
 }
