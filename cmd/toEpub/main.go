@@ -64,7 +64,7 @@ func main() {
 		log.Println("Cannot fill document: ", err)
 		return
 	}
-	log.Println("writing output")
+	log.Println("writing output: ", fmt.Sprintf("%v.epub", filepath.Base(os.Args[len(os.Args)-1])))
 	err = doc.Write(fmt.Sprintf("%v.epub", filepath.Base(os.Args[len(os.Args)-1])))
 	if err != nil {
 		log.Fatal("Cannot write document: ", err)
