@@ -21,6 +21,10 @@ import (
 	"golang.org/x/net/html"
 )
 
+func init() {
+	epub.Use(epub.MemoryFS)
+}
+
 type Document struct {
 	*epub.Epub
 	item        pocket.Item
