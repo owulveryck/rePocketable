@@ -21,7 +21,6 @@ ex:
 
 ```shell
  toEpub -H 'sec-ch-ua: "Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"' \
-  -H 'Referer: https://www.feynmanlectures.caltech.edu/I_01.html' \
   -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36' \
   -H 'sec-ch-ua-platform: "macOS"'  https://thewebsite/thepage.html
 ```
