@@ -56,16 +56,13 @@ func Test_getURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotSource, gotFilename, err := getURL(tt.args.attr)
+			gotSource, _, err := getURL(tt.args.attr)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getURL() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotSource != tt.wantSource {
 				t.Errorf("getURL() gotSource = %v, want %v", gotSource, tt.wantSource)
-			}
-			if gotFilename != tt.wantFilename {
-				t.Errorf("getURL() gotFilename = %v, want %v", gotFilename, tt.wantFilename)
 			}
 		})
 	}
