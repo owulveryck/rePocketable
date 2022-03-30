@@ -84,7 +84,7 @@ func main() {
 					log.Printf("%v already present (%v)", item.ItemID, item.ResolvedTitle)
 					return
 				}
-				doc := epub.NewDocument(item)
+				doc := epub.NewDocument(item.ResolvedURL)
 				doc.Client = downloader.HTTPClient
 				err := doc.Fill(ctx)
 				if err != nil {

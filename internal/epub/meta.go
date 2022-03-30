@@ -95,7 +95,7 @@ func (d *Document) createMeta() error {
 		Title:   d.Title(),
 		Summary: d.Description(),
 		Build:   time.Now().Format("2006-02-01 15:04:05"),
-		Website: d.item.ResolvedURL,
+		Website: d.Element,
 	}
 	if d.OG != nil && d.OG.Article != nil {
 		if d.OG.Article.PublishedTime != nil {

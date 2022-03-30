@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -14,6 +16,7 @@ import (
 	nethttp "net/http"
 	"net/url"
 
+	"github.com/dyatlov/go-opengraph/opengraph"
 	"github.com/owulveryck/rePocketable/internal/epub"
 	"github.com/owulveryck/rePocketable/internal/http"
 	"github.com/owulveryck/rePocketable/internal/pocket"
@@ -58,6 +61,7 @@ func main() {
 		log.Fatal(err)
 	}
 	content := os.Args[len(os.Args)-1]
+	log.Println(content)
 	u, err := url.Parse(content)
 	if err != nil {
 		log.Fatal(err)
@@ -70,6 +74,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	res.Body.Close()
 	t := &tocRetriever{}
 	err = t.preProcess(d)
 	if err != nil {
@@ -78,24 +83,52 @@ func main() {
 
 	doc := epub.NewDocument("")
 	doc.Client = downloader.HTTPClient
-	doc.CSS = css
-	for _, url := range t.urls {
+	filename := filepath.Base(content) + ".epub"
+	for i, url := range t.urls {
 		u2 := *u
 		u2.Path = url
-		log.Println(u2.String())
-		doc.Element = u2.String()
-		doc.CurrentSectionName = u2.String()
+		res, err := downloader.Get(ctx, u2.String())
+		if err != nil {
+			log.Fatal(err)
+		}
+		b, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var c v1Payload
+		err = json.Unmarshal(b, &c)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if i == 0 {
+			doc.OG = &opengraph.OpenGraph{}
+			doc.SetAuthor(c.Authors[0].Name)
+			doc.SetTitle(c.BookTitle)
+			if c.BookTitle != "" {
+				filename = c.BookTitle + ".epub"
+			}
+			cover, err := doc.AddImage(c.Cover, "")
+			if err != nil {
+				log.Println(err)
+			}
+			doc.SetCover(cover, "")
+		}
+		log.Printf("Grabbing %v: %v", c.Title, c.Content)
+		doc.Element = c.Content
+		doc.CurrentSectionName = c.Title
+		doc.CSS = bytes.NewBufferString(css)
 		err = doc.Fill(ctx)
 		if err != nil {
 			log.Println("Cannot fill document: ", err)
 			return
 		}
 	}
-	log.Println("writing output: ", fmt.Sprintf("%v.epub", filepath.Base(os.Args[len(os.Args)-1])))
-	err = doc.Write(fmt.Sprintf("%v.epub", filepath.Base(os.Args[len(os.Args)-1])))
+	log.Println("grabbing assets and generating epub")
+	err = doc.Write(filename)
 	if err != nil {
 		log.Fatal("Cannot write document: ", err)
 	}
+	log.Println("output: ", filename)
 }
 
 type tocRetriever struct {

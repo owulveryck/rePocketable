@@ -52,11 +52,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	item := pocket.Item{
-		ResolvedURL: os.Args[len(os.Args)-1],
-		GivenURL:    os.Args[len(os.Args)-1],
-	}
-	doc := epub.NewDocument(item)
+	target := os.Args[len(os.Args)-1]
+	doc := epub.NewDocument(target)
 	doc.Client = downloader.HTTPClient
 	doc.CSS = css
 	err = doc.Fill(ctx)

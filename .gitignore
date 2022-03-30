@@ -7,3 +7,4 @@ testdata/.db
 
 dist/
 cmd/getPocketDaemon/testdata/
+cmd/toEpubWasm/htdocs/assets/toEpub.wasm

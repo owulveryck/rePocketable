@@ -17,7 +17,6 @@ import (
 	"github.com/bmaupin/go-epub"
 	"github.com/cixtor/readability"
 	"github.com/dyatlov/go-opengraph/opengraph"
-	"github.com/owulveryck/rePocketable/internal/pocket"
 	"golang.org/x/net/html"
 )
 
@@ -27,20 +26,20 @@ func init() {
 
 type Document struct {
 	*epub.Epub
-	item        pocket.Item
-	buf         strings.Builder
-	currSection string
-	Client      *http.Client
-	CSS         io.Reader
-	OG          *opengraph.OpenGraph
+	Element            string
+	buf                strings.Builder
+	CurrentSectionName string
+	Client             *http.Client
+	CSS                io.Reader
+	OG                 *opengraph.OpenGraph
 }
 
-func NewDocument(item pocket.Item) *Document {
+func NewDocument(element string) *Document {
 	return &Document{
-		Epub:        epub.NewEpub(""),
-		item:        item,
-		buf:         strings.Builder{},
-		currSection: "Preamble",
+		Epub:               epub.NewEpub(""),
+		Element:            element,
+		buf:                strings.Builder{},
+		CurrentSectionName: "Preamble",
 	}
 }
 
@@ -51,7 +50,7 @@ func (d *Document) Fill(ctx context.Context) error {
 		client = d.Client
 	}
 	r := readability.New()
-	req, err := http.NewRequestWithContext(ctx, "GET", d.item.URL(), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", d.Element, nil)
 	if err != nil {
 		return fmt.Errorf("cannot create request: %w", err)
 	}
@@ -62,7 +61,11 @@ func (d *Document) Fill(ctx context.Context) error {
 	defer res.Body.Close()
 
 	og, content := getOpenGraph(res.Body)
-	d.OG = og
+	firstPass := false
+	if d.OG == nil {
+		d.OG = og
+		firstPass = true
+	}
 	doc, err := html.Parse(content)
 	if err != nil {
 		return err
@@ -81,13 +84,15 @@ func (d *Document) Fill(ctx context.Context) error {
 			return
 		}
 	}()
-	article, err := r.Parse(pipeR, d.item.ResolvedURL)
+	article, err := r.Parse(pipeR, d.Element)
 	if err != nil {
 		return fmt.Errorf("cannot parse document: %w", err)
 	}
-	err = d.setMeta(&article)
-	if err != nil {
-		return err
+	if firstPass {
+		err = d.setMeta(&article)
+		if err != nil {
+			return err
+		}
 	}
 	err = d.replaceImages(article.Node)
 	if err != nil {
@@ -97,15 +102,17 @@ func (d *Document) Fill(ctx context.Context) error {
 	if err != nil {
 		log.Println(err)
 	}
+	if firstPass {
+		d.createMeta()
+	}
 
 	var body strings.Builder
 	err = html.Render(&body, article.Node)
 	if err != nil {
 		return err
 	}
-	d.createMeta()
 
-	_, err = d.AddSection(body.String(), "Content", "", css)
+	_, err = d.AddSection(body.String(), d.CurrentSectionName, "", css)
 	return err
 }
 
@@ -182,12 +189,12 @@ func (d *Document) getURL(attr []html.Attribute) (source string, filename string
 	}
 	// if no scheme, force https
 	if u.Scheme == "" {
-		ru, _ := url.Parse(d.item.ResolvedURL)
+		ru, _ := url.Parse(d.Element)
 		u.Scheme = ru.Scheme
 
 	}
 	if u.Host == "" {
-		ru, _ := url.Parse(d.item.ResolvedURL)
+		ru, _ := url.Parse(d.Element)
 		u.Host = ru.Host
 	}
 	f := fmt.Sprintf("%x.%v", md5.Sum([]byte(u.String())), filepath.Ext(val))

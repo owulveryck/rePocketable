@@ -53,7 +53,7 @@ func main() {
 					close(myPocket.ItemsC)
 				}()
 				log.Println("processing ", item.ItemID)
-				doc := epub.NewDocument(item)
+				doc := epub.NewDocument(item.ResolvedURL)
 				doc.Client = downloader.HTTPClient
 				doc.CSS = css
 				err := doc.Fill(ctx)

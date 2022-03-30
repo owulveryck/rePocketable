@@ -6,12 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/owulveryck/rePocketable/internal/pocket"
 	"golang.org/x/net/html"
 )
 
 func ExampleDocument() {
-	d := NewDocument(pocket.Item{})
+	d := NewDocument("")
 	err := d.Fill(context.TODO())
 	if err != nil {
 		log.Fatal(err)

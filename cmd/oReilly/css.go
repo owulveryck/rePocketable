@@ -1,8 +1,6 @@
 package main
 
-import "bytes"
-
-var css = bytes.NewBufferString(`
+const css = `
 /*===Reset code to prevent cross-reader strangeness===*/
 
 html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
@@ -411,4 +409,4 @@ figcaption {
 	margin-top: 10px;
 	margin-left: auto;
 	text-align: center;
-}`)
+}`
